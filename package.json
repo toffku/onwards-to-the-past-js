@@ -1,0 +1,22 @@
+{
+  "name": "onwards-to-the-past-web",
+  "version": "1.0.0",
+  "description": "Time-travel action platformer - JavaScript web version",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "http-server . -p 8000 -c-1",
+    "dev": "http-server . -p 8000 -c-1",
+    "build": "echo 'Build script - customize as needed'"
+  },
+  "keywords": [
+    "phaser",
+    "game",
+    "platformer",
+    "action"
+  ],
+  "author": "Ubisoft",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

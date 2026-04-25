@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Onwards To The Past - Web Version</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #222;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+      }
+
+      #game {
+        width: 100%;
+        max-width: 1024px;
+        height: auto;
+      }
+
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game"></div>
+
+    <!-- Phaser 3 Library -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+
+    <!-- Game Scripts -->
+    <script src="src/config.js"></script>
+    <script src="src/scenes/MenuScene.js"></script>
+    <script src="src/scenes/LevelScene.js"></script>
+    <script src="src/physics/Player.js"></script>
+    <script src="src/physics/Enemy.js"></script>
+    <script src="src/physics/Projectile.js"></script>
+    <script src="src/ui/HUD.js"></script>
+    <script src="src/utils/Constants.js"></script>
+    <script src="src/main.js"></script>
+  </body>
+</html>
