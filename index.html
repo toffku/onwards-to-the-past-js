@@ -35,18 +35,38 @@
   <body>
     <div id="game"></div>
 
+    <script>
+      // Global error handler to catch any JavaScript errors
+      window.addEventListener("error", (event) => {
+        console.error("Global error:", event.error);
+        console.error(
+          "Error details:",
+          event.message,
+          event.filename,
+          event.lineno,
+        );
+      });
+
+      window.addEventListener("unhandledrejection", (event) => {
+        console.error("Unhandled promise rejection:", event.reason);
+      });
+    </script>
+
     <!-- Phaser 3 Library -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
 
     <!-- Game Scripts -->
-    <script src="src/config.js"></script>
+    <!-- Load order: Constants → Classes → Config → Main -->
+    <script src="src/utils/Constants.js"></script>
     <script src="src/scenes/MenuScene.js"></script>
     <script src="src/scenes/LevelScene.js"></script>
     <script src="src/physics/Player.js"></script>
     <script src="src/physics/Enemy.js"></script>
     <script src="src/physics/Projectile.js"></script>
     <script src="src/ui/HUD.js"></script>
-    <script src="src/utils/Constants.js"></script>
+    <script src="src/utils/AnimationManager.js"></script>
+    <script src="src/utils/LevelManager.js"></script>
+    <script src="src/config.js"></script>
     <script src="src/main.js"></script>
   </body>
 </html>

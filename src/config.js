@@ -18,5 +18,13 @@ const config = {
   },
 };
 
-// Initialize Game
-const game = new Phaser.Game(config);
+// Initialize Game with error handling
+let game;
+try {
+  console.log("Creating Phaser game with config:", config);
+  game = new Phaser.Game(config);
+  console.log("Phaser game created successfully");
+} catch (error) {
+  console.error("Error creating Phaser game:", error);
+  document.body.innerHTML = `<div style="color: red; padding: 20px; font-family: monospace;"><h2>Game Initialization Error</h2><pre>${error.message}\n${error.stack}</pre></div>`;
+}

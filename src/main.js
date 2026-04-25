@@ -5,4 +5,7 @@
 // and started when the page loads
 
 console.log("Onwards To The Past - Web Version");
+console.log("Phaser version:", Phaser.VERSION);
+console.log("Game config:", config);
+console.log("Game instance:", game);
 console.log("Game initialized and ready!");
