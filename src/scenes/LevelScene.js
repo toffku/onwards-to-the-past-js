@@ -198,13 +198,14 @@ class LevelScene extends Phaser.Scene {
       },
     );
 
-    // Player projectiles / walls
-    this.physics.add.collider(this.playerProjectiles, this.walls, (projSprite) => {
+    // Player projectiles / walls — overlap, not collider: collider separates bodies and
+    // can zero velocity before the callback runs, making projectiles stop on first wall touch.
+    this.physics.add.overlap(this.playerProjectiles, this.walls, (projSprite) => {
       projSprite.destroy();
     });
 
     // Enemy projectiles / walls
-    this.physics.add.collider(this.projectiles, this.walls, (projSprite) => {
+    this.physics.add.overlap(this.projectiles, this.walls, (projSprite) => {
       projSprite.destroy();
     });
   }
