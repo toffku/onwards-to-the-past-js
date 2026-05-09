@@ -56,16 +56,16 @@
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
 
     <!-- Game Scripts -->
-    <!-- Load order: Constants → Classes → Config → Main -->
+    <!-- Load order: Constants → Utilities → Physics → UI → Scenes → Config → Main -->
     <script src="src/utils/Constants.js"></script>
-    <script src="src/scenes/MenuScene.js"></script>
-    <script src="src/scenes/LevelScene.js"></script>
+    <script src="src/utils/SpriteGenerator.js"></script>
+    <script src="src/utils/LevelManager.js"></script>
+    <script src="src/physics/Projectile.js"></script>
     <script src="src/physics/Player.js"></script>
     <script src="src/physics/Enemy.js"></script>
-    <script src="src/physics/Projectile.js"></script>
     <script src="src/ui/HUD.js"></script>
-    <script src="src/utils/AnimationManager.js"></script>
-    <script src="src/utils/LevelManager.js"></script>
+    <script src="src/scenes/MenuScene.js"></script>
+    <script src="src/scenes/LevelScene.js"></script>
     <script src="src/config.js"></script>
     <script src="src/main.js"></script>
   </body>

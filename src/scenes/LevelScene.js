@@ -1,4 +1,6 @@
-// Level Scene - Main gameplay scene
+// LevelScene — top-down shooter gameplay.
+// Reads level layout from LevelManager.LEVEL_DATA; draws floor + walls with Graphics;
+// uses an invisible static-body group for wall collision.
 class LevelScene extends Phaser.Scene {
   constructor() {
     super("LevelScene");
@@ -6,159 +8,300 @@ class LevelScene extends Phaser.Scene {
 
   init(data) {
     this.levelIndex = data.levelIndex || 0;
-    this.levelConfig = GAME_CONSTANTS.LEVELS[this.levelIndex];
+    this.levelConfig = GAME_CONSTANTS.LEVELS[this.levelIndex] || GAME_CONSTANTS.LEVELS[0];
   }
 
   preload() {
-    // Load level-specific assets here
-    // Currently placeholder - assets need to be exported from GameMaker
+    // All textures are generated programmatically in create()
   }
 
   create() {
-    // Set background color based on era
-    this.setBackgroundByEra();
+    // Generate all textures first — must happen before any sprites are created
+    SpriteGenerator.generate(this);
 
-    // Create physics groups
-    this.platforms = this.physics.add.staticGroup();
+    const levelData = LevelManager.getLevelData(this.levelIndex) || {};
+    const worldW = levelData.width || 2000;
+    const worldH = levelData.height || 768;
+
+    // World & physics bounds
+    this.physics.world.setBounds(0, 0, worldW, worldH);
+
+    // ── Visual layers ────────────────────────────────────────────────────────
+    this._drawFloor(worldW, worldH);
+
+    // ── Wall physics group (invisible static bodies) ─────────────────────────
+    this.walls = this.physics.add.staticGroup();
+    this._buildWalls(levelData, worldW, worldH);
+
+    // ── Projectile groups ─────────────────────────────────────────────────────
     this.enemies = this.physics.add.group();
-    this.projectiles = this.physics.add.group();
-    this.playerProjectiles = this.physics.add.group();
+    this.projectiles = this.physics.add.group();       // enemy shots
+    this.playerProjectiles = this.physics.add.group(); // player shots
 
-    // Create player
-    this.player = new Player(this, 100, 300);
+    // ── Enemies ───────────────────────────────────────────────────────────────
+    this._spawnEnemies(levelData);
 
-    // Create basic level layout
-    this.createBasicLevel();
+    // ── Player ────────────────────────────────────────────────────────────────
+    const spawn = levelData.spawns && levelData.spawns.player
+      ? levelData.spawns.player
+      : { x: 80, y: 350 };
+    this.player = new Player(this, spawn.x, spawn.y);
 
-    // Setup collisions
-    this.setupCollisions();
+    // ── Collisions ────────────────────────────────────────────────────────────
+    this._setupCollisions();
 
-    // Setup input
-    this.setupInput();
-
-    // Create HUD
-    this.hud = new HUD(this);
-
-    // Set camera to follow player
-    this.cameras.main.setBounds(0, 0, 2000, this.sys.game.config.height);
-    this.cameras.main.startFollow(this.player.sprite);
-
-    this.physics.world.setBounds(0, 0, 2000, this.sys.game.config.height);
-  }
-
-  setBackgroundByEra() {
-    const eraColors = {
-      asylum: "#4a4a4a",
-      egypt: "#c9a876",
-      jurassic: "#2d5016",
-      medieval: "#3d3d5c",
-      wildwest: "#b8860b",
-      wwii: "#505050",
-    };
-
-    const color = eraColors[this.levelConfig.era] || "#1a1a1a";
-    this.cameras.main.setBackgroundColor(color);
-  }
-
-  createBasicLevel() {
-    // Create temporary placeholder level
-    // In production, this would load from level data
-
-    // Ground
-    this.platforms
-      .create(500, GAME_CONSTANTS.HEIGHT - 50, null)
-      .setScale(10, 1)
-      .refreshBody();
-
-    // Add some platforms
-    this.platforms.create(300, GAME_CONSTANTS.HEIGHT - 200, null);
-    this.platforms.create(700, GAME_CONSTANTS.HEIGHT - 300, null);
-
-    // Create a simple enemy
-    new Enemy(this, 800, 400, GAME_CONSTANTS.ENEMY_TYPES.MELEE);
-  }
-
-  setupCollisions() {
-    // Player vs platforms
-    this.physics.add.collider(this.player.sprite, this.platforms);
-
-    // Player projectiles vs enemies
-    this.physics.add.overlap(
-      this.playerProjectiles,
-      this.enemies,
-      (projectile, enemy) => {
-        projectile.destroy();
-        enemy.takeDamage(GAME_CONSTANTS.PROJECTILE_DAMAGE);
-      },
-      null,
-      this,
-    );
-
-    // Enemy projectiles vs player
-    this.physics.add.overlap(
-      this.projectiles,
-      this.player.sprite,
-      () => {
-        this.player.takeDamage(GAME_CONSTANTS.ENEMY_DAMAGE);
-      },
-      null,
-      this,
-    );
-
-    // Enemies vs platforms
-    this.physics.add.collider(this.enemies, this.platforms);
-  }
-
-  setupInput() {
+    // ── Input ─────────────────────────────────────────────────────────────────
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = {
       z: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z),
-      space: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
     };
+
+    // ── HUD ───────────────────────────────────────────────────────────────────
+    this.hud = new HUD(this);
+
+    // ── Camera ────────────────────────────────────────────────────────────────
+    this.cameras.main.setBounds(0, 0, worldW, worldH);
+    this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1);
+    this.cameras.main.setBackgroundColor(this._eraFloorColor());
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    this.levelCompleting = false;
   }
 
+  // ── Floor background with subtle grid ─────────────────────────────────────
+
+  _drawFloor(w, h) {
+    const g = this.add.graphics();
+    g.fillStyle(this._eraFloorColorHex());
+    g.fillRect(0, 0, w, h);
+
+    // Subtle grid lines
+    g.lineStyle(1, 0xffffff, 0.04);
+    for (let x = 0; x <= w; x += 64) g.lineBetween(x, 0, x, h);
+    for (let y = 0; y <= h; y += 64) g.lineBetween(0, y, w, y);
+  }
+
+  // ── Build all walls (visual + physics) ────────────────────────────────────
+
+  _buildWalls(levelData, w, h) {
+    const wallColor = this._eraWallColorHex();
+    const bw = 24; // border thickness
+
+    // Draw all wall visuals in one graphics pass
+    const g = this.add.graphics();
+    const drawWallRect = (x, y, rw, rh) => {
+      g.fillStyle(wallColor);
+      g.fillRect(x, y, rw, rh);
+      // Bevel highlights
+      g.fillStyle(0xffffff, 0.09);
+      g.fillRect(x, y, rw, 3);
+      g.fillRect(x, y, 3, rh);
+      g.fillStyle(0x000000, 0.18);
+      g.fillRect(x, y + rh - 3, rw, 3);
+      g.fillRect(x + rw - 3, y, 3, rh);
+      // Physics body (invisible, centered)
+      this._addWallBody(x + rw / 2, y + rh / 2, rw, rh);
+    };
+
+    // Perimeter
+    drawWallRect(0, 0, w, bw);         // top
+    drawWallRect(0, h - bw, w, bw);   // bottom
+    drawWallRect(0, 0, bw, h);         // left
+    drawWallRect(w - bw, 0, bw, h);   // right
+
+    // Internal walls from level data (treat all platforms as top-down barriers)
+    if (levelData.platforms) {
+      levelData.platforms.forEach((p) => {
+        if (p.type === "ground") return; // bottom perimeter already covers this
+        drawWallRect(p.x, p.y, p.width, p.height);
+      });
+    }
+
+    if (levelData.obstacles) {
+      levelData.obstacles.forEach((o) => {
+        drawWallRect(o.x, o.y, o.width, o.height);
+      });
+    }
+  }
+
+  _addWallBody(cx, cy, w, h) {
+    const body = this.walls.create(cx, cy, "pixel");
+    body.setDisplaySize(w, h);
+    body.setVisible(false);
+    body.refreshBody();
+  }
+
+  // ── Enemy spawning ─────────────────────────────────────────────────────────
+
+  _spawnEnemies(levelData) {
+    const era = this.levelConfig.era;
+
+    if (levelData.enemies && levelData.enemies.length > 0) {
+      levelData.enemies.forEach((e) => {
+        new Enemy(this, e.x, e.y, e.type, e.era || era);
+      });
+    } else {
+      // Fallback for placeholder levels
+      new Enemy(this, 400, 200, GAME_CONSTANTS.ENEMY_TYPES.MELEE, era);
+      new Enemy(this, 700, 350, GAME_CONSTANTS.ENEMY_TYPES.RANGED, era);
+      new Enemy(this, 1000, 200, GAME_CONSTANTS.ENEMY_TYPES.BRUTE, era);
+    }
+  }
+
+  // ── Collision setup ────────────────────────────────────────────────────────
+
+  _setupCollisions() {
+    // Player / walls
+    this.physics.add.collider(this.player.sprite, this.walls);
+
+    // Enemies / walls
+    this.physics.add.collider(this.enemies, this.walls);
+
+    // Enemies / enemies (so they don't stack)
+    this.physics.add.collider(this.enemies, this.enemies);
+
+    // Player projectiles hit enemies
+    this.physics.add.overlap(
+      this.playerProjectiles,
+      this.enemies,
+      (projSprite, enemySprite) => {
+        projSprite.destroy();
+        if (enemySprite.enemyRef) {
+          enemySprite.enemyRef.takeDamage(GAME_CONSTANTS.PROJECTILE_DAMAGE);
+        }
+      },
+    );
+
+    // Enemy projectiles hit player
+    this.physics.add.overlap(
+      this.projectiles,
+      this.player.sprite,
+      (projSprite) => {
+        projSprite.destroy();
+        this.player.takeDamage(GAME_CONSTANTS.ENEMY_DAMAGE);
+      },
+    );
+
+    // Melee/brute enemies damage on touch
+    this.physics.add.overlap(
+      this.player.sprite,
+      this.enemies,
+      (playerSprite, enemySprite) => {
+        if (!enemySprite.enemyRef) return;
+        const type = enemySprite.enemyRef.type;
+        if (type !== GAME_CONSTANTS.ENEMY_TYPES.RANGED) {
+          const dmg = type === GAME_CONSTANTS.ENEMY_TYPES.BRUTE
+            ? GAME_CONSTANTS.ENEMY_DAMAGE_BRUTE
+            : GAME_CONSTANTS.ENEMY_DAMAGE;
+          this.player.takeDamage(dmg);
+        }
+      },
+    );
+
+    // Player projectiles / walls
+    this.physics.add.collider(this.playerProjectiles, this.walls, (projSprite) => {
+      projSprite.destroy();
+    });
+
+    // Enemy projectiles / walls
+    this.physics.add.collider(this.projectiles, this.walls, (projSprite) => {
+      projSprite.destroy();
+    });
+  }
+
+  // ── Main loop ──────────────────────────────────────────────────────────────
+
   update() {
-    // Update player input
-    if (this.cursors.left.isDown) {
-      this.player.moveLeft();
-    } else if (this.cursors.right.isDown) {
-      this.player.moveRight();
+    if (this.levelCompleting) return;
+
+    // 8-directional movement
+    const left = this.cursors.left.isDown;
+    const right = this.cursors.right.isDown;
+    const up = this.cursors.up.isDown;
+    const down = this.cursors.down.isDown;
+
+    let dx = 0, dy = 0;
+    if (left)  dx -= 1;
+    if (right) dx += 1;
+    if (up)    dy -= 1;
+    if (down)  dy += 1;
+
+    if (dx !== 0 || dy !== 0) {
+      // Normalise diagonal so diagonal speed equals cardinal speed
+      const len = Math.sqrt(dx * dx + dy * dy);
+      this.player.move(dx / len, dy / len);
+    } else {
+      this.player.stop();
     }
 
-    if (this.cursors.up.isDown) {
-      this.player.moveUp();
-    } else if (this.cursors.down.isDown) {
-      this.player.moveDown();
-    }
-
-    // Jump
-    if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
-      this.player.jump();
-    }
-
-    // Shoot
     if (Phaser.Input.Keyboard.JustDown(this.keys.z)) {
       this.player.shoot(this.playerProjectiles);
     }
 
-    // Update HUD
-    this.hud.updateHealth(this.player.health);
+    // Enemy AI
+    this.enemies.children.entries.forEach((sprite) => {
+      if (sprite.active && sprite.enemyRef) sprite.enemyRef.update();
+    });
 
-    // Check if player died
+    // HUD
+    this.hud.update(this.player.health, this.enemies.countActive(true));
+
+    // Death check
     if (this.player.health <= 0) {
-      this.gameOver();
+      this._gameOver();
     }
+  }
 
-    // Update enemies
-    this.enemies.children.entries.forEach((enemy) => {
-      if (enemy.active) {
-        enemy.update();
+  // ── Level complete / game over ─────────────────────────────────────────────
+
+  checkLevelComplete() {
+    if (this.levelCompleting) return;
+    if (this.enemies.countActive(true) > 0) return;
+
+    this.levelCompleting = true;
+    this.hud.showMessage("LEVEL COMPLETE!", "#00ff88");
+
+    this.time.delayedCall(1800, () => {
+      const next = this.levelIndex + 1;
+      if (next < GAME_CONSTANTS.LEVELS.length) {
+        this.scene.start("LevelScene", { levelIndex: next });
+      } else {
+        this.hud.showMessage("YOU WIN!", "#ffdd00");
+        this.time.delayedCall(2500, () => this.scene.start("MenuScene"));
       }
     });
   }
 
-  gameOver() {
-    this.scene.stop();
-    this.scene.start("MenuScene");
+  _gameOver() {
+    if (this.levelCompleting) return;
+    this.levelCompleting = true;
+    this.hud.showMessage("GAME OVER", "#ff3333");
+    this.time.delayedCall(2000, () => this.scene.start("MenuScene"));
+  }
+
+  // ── Era colour helpers ─────────────────────────────────────────────────────
+
+  _eraFloorColor() {
+    const map = {
+      asylum: "#1e1e28", egypt: "#3a2e18", jurassic: "#0f2210",
+      medieval: "#161628", wildwest: "#2e2010", wwii: "#1a1a1a",
+    };
+    return map[this.levelConfig.era] || "#1a1a22";
+  }
+
+  _eraFloorColorHex() {
+    const map = {
+      asylum: 0x1e1e28, egypt: 0x3a2e18, jurassic: 0x0f2210,
+      medieval: 0x161628, wildwest: 0x2e2010, wwii: 0x1a1a1a,
+    };
+    return map[this.levelConfig.era] || 0x1a1a22;
+  }
+
+  _eraWallColorHex() {
+    const map = {
+      asylum: 0x3a4a5a, egypt: 0x7a6040, jurassic: 0x2a4a1a,
+      medieval: 0x404055, wildwest: 0x6a4a20, wwii: 0x354535,
+    };
+    return map[this.levelConfig.era] || 0x3a4a5a;
   }
 }

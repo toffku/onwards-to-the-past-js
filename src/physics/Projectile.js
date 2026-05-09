@@ -1,21 +1,24 @@
-// Projectile class
+// Projectile — 2D velocity, no gravity. Auto-destroys after lifetime or on wall hit.
 class Projectile {
-  constructor(scene, x, y, velocityX, group, isPlayerProjectile) {
+  constructor(scene, x, y, velocityX, velocityY, group, isPlayerProjectile) {
     this.scene = scene;
     this.isPlayerProjectile = isPlayerProjectile;
 
-    // Create sprite (placeholder)
-    this.sprite = scene.physics.add.sprite(x, y, null);
-    this.sprite.setVelocityX(velocityX);
-    this.sprite.setCollideWorldBounds(true);
-    this.sprite.setBounceX(0);
-    this.sprite.setGravityY(-500); // Projectiles affected by gravity
+    const key = isPlayerProjectile ? "projectile_player" : "projectile_enemy";
+    this.sprite = scene.physics.add.sprite(x, y, key);
+    this.sprite.setVelocity(velocityX, velocityY);
 
-    // Add to appropriate group
+    // Rotate sprite to face travel direction
+    this.sprite.setRotation(Math.atan2(velocityY, velocityX));
+
+    // No world-bounds bounce; just let it travel until destroyed
+    this.sprite.setCollideWorldBounds(false);
+
     group.add(this.sprite);
-  }
 
-  destroy() {
-    this.sprite.destroy();
+    // Auto-cleanup
+    scene.time.delayedCall(GAME_CONSTANTS.PROJECTILE_LIFETIME, () => {
+      if (this.sprite && this.sprite.active) this.sprite.destroy();
+    });
   }
 }

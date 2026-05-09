@@ -1,99 +1,78 @@
-// Player class
+// Player — top-down shooter. No gravity, no jumping.
+// Moves in 8 directions (arrow keys); sprite rotates to face movement direction.
+// Shoots in the direction last faced (Z key).
 class Player {
   constructor(scene, x, y) {
     this.scene = scene;
     this.health = GAME_CONSTANTS.PLAYER_START_HEALTH;
     this.speed = GAME_CONSTANTS.PLAYER_SPEED;
-    this.jumpVelocity = GAME_CONSTANTS.PLAYER_JUMP_VELOCITY;
-    this.facingDirection = -180; // -180 = left, 0 = right
+    this.facingAngle = 0; // radians; 0 = right, matches Phaser rotation convention
     this.canFire = true;
-    this.takeDamage = true;
-    this.damageTimer = 0;
+    this.damageCooldown = false;
 
-    // Create sprite (placeholder - will use actual sprites when assets are ready)
-    this.sprite = scene.physics.add.sprite(x, y, null);
+    this.sprite = scene.physics.add.sprite(x, y, "player");
     this.sprite.setCollideWorldBounds(true);
-    this.sprite.setBounce(0.2);
-    this.sprite.setDrag(0.99);
-
-    // Store reference for callbacks
+    this.sprite.setDamping(true);
+    this.sprite.setDrag(0.85);
+    this.sprite.setMaxVelocity(this.speed);
     this.sprite.playerRef = this;
   }
 
-  moveLeft() {
-    this.sprite.setVelocityX(-this.speed);
-    this.facingDirection = -180;
+  // dx, dy are normalised direction components (-1, 0, or 1 each)
+  move(dx, dy) {
+    this.sprite.setVelocity(dx * this.speed, dy * this.speed);
+    this.facingAngle = Math.atan2(dy, dx);
+    this.sprite.setRotation(this.facingAngle);
   }
 
-  moveRight() {
-    this.sprite.setVelocityX(this.speed);
-    this.facingDirection = 0;
-  }
-
-  moveUp() {
-    // Game may support vertical movement in some areas
-    if (Math.abs(this.sprite.body.velocity.y) < 100) {
-      this.sprite.setVelocityY(-this.speed * 0.5);
-    }
-  }
-
-  moveDown() {
-    // Crouch or descend
-    if (Math.abs(this.sprite.body.velocity.y) < 100) {
-      this.sprite.setVelocityY(this.speed * 0.5);
-    }
-  }
-
-  jump() {
-    // Only jump if on ground (touching platforms)
-    if (this.sprite.body.touching.down) {
-      this.sprite.setVelocityY(this.jumpVelocity);
-    }
+  stop() {
+    this.sprite.setVelocity(0, 0);
   }
 
   shoot(projectileGroup) {
     if (!this.canFire) return;
 
-    const startX = this.sprite.x + (this.facingDirection === 0 ? 20 : -20);
-    const startY = this.sprite.y;
-    const velocity =
-      this.facingDirection === 0
-        ? GAME_CONSTANTS.PROJECTILE_SPEED
-        : -GAME_CONSTANTS.PROJECTILE_SPEED;
+    const ox = Math.cos(this.facingAngle) * 22;
+    const oy = Math.sin(this.facingAngle) * 22;
+    const vx = Math.cos(this.facingAngle) * GAME_CONSTANTS.PROJECTILE_SPEED;
+    const vy = Math.sin(this.facingAngle) * GAME_CONSTANTS.PROJECTILE_SPEED;
 
     new Projectile(
       this.scene,
-      startX,
-      startY,
-      velocity,
+      this.sprite.x + ox,
+      this.sprite.y + oy,
+      vx,
+      vy,
       projectileGroup,
-      true, // isPlayerProjectile
+      true,
     );
 
     this.canFire = false;
-    this.scene.time.delayedCall(200, () => {
+    this.scene.time.delayedCall(220, () => {
       this.canFire = true;
     });
   }
 
   takeDamage(amount) {
-    if (!this.takeDamage) return;
+    if (this.damageCooldown) return;
 
     this.health -= amount;
-    this.takeDamage = false;
+    this.damageCooldown = true;
 
-    // Knockback effect
-    this.sprite.setVelocityX(this.sprite.body.velocity.x > 0 ? -150 : 150);
+    // Flash red on hit
+    this.scene.tweens.add({
+      targets: this.sprite,
+      alpha: 0.2,
+      duration: 80,
+      yoyo: true,
+      repeat: 3,
+      onComplete: () => {
+        if (this.sprite && this.sprite.active) this.sprite.setAlpha(1);
+      },
+    });
 
-    this.damageTimer = GAME_CONSTANTS.PLAYER_DAMAGE_COOLDOWN;
-  }
-
-  update() {
-    if (this.damageTimer > 0) {
-      this.damageTimer--;
-      if (this.damageTimer <= 0) {
-        this.takeDamage = true;
-      }
-    }
+    this.scene.time.delayedCall(GAME_CONSTANTS.PLAYER_DAMAGE_COOLDOWN, () => {
+      this.damageCooldown = false;
+    });
   }
 }
