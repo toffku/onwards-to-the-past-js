@@ -1,14 +1,15 @@
 # Onwards To The Past - JavaScript Web Conversion
 
-A complete conversion of the award-winning GameMaker platformer to a modern JavaScript web application using Phaser 3.
+A top-down shooter adaptation of the award-winning GameMaker game, built as a modern JavaScript web application using Phaser 3.
 
 ## Project Status
 
-✅ **Phase 1 Complete:** Project structure and core framework established  
-🔄 **Phase 2:** Asset extraction and conversion (IN PROGRESS)  
-⏳ **Phase 3:** Enemy AI implementation  
-⏳ **Phase 4:** Level design and implementation  
-⏳ **Phase 5:** Polish and optimization
+✅ **Core gameplay loop:** Player movement, shooting, 3 enemy types (melee/ranged/brute), collision, HUD  
+✅ **Enemy AI:** Patrol, detection radius, chase, ranged firing with cooldown  
+✅ **Procedural visuals:** All sprites generated at runtime via `SpriteGenerator` — no external assets required to run  
+🔄 **Level content:** 2 fully populated levels (Asylum, Egypt 1); 9 remaining levels are placeholders  
+⏳ **Asset integration:** Original sprites/audio pending extraction from the GameMaker project  
+⏳ **Polish and optimization**
 
 ## Getting Started
 
@@ -16,7 +17,6 @@ A complete conversion of the award-winning GameMaker platformer to a modern Java
 
 - Node.js and npm (for running a development server)
 - A modern web browser (Chrome, Firefox, Safari, Edge)
-- The original GameMaker project files
 
 ### Installation
 
@@ -53,20 +53,19 @@ assets/
 ## Key Features
 
 - **6 Different Eras:** Asylum, Egypt, Jurassic, Medieval, Wild West, WWII
-- **11 Playable Levels:** Multiple levels per era
-- **Dynamic Enemy Types:** Brutes, melee fighters, ranged attackers
-- **Physics-Based Combat:** Projectile system with collision detection
-- **Audio System:** Dynamic music and sound effects
-- **Responsive Controls:** Keyboard input with smooth movement
+- **11 Levels:** 2 fully implemented; 9 are content placeholders
+- **3 Enemy Types:** Brutes (slow/heavy), melee fighters (fast charge), ranged attackers (keep distance, shoot)
+- **Physics-Based Combat:** Projectile system with full collision detection
+- **Procedural Visuals:** All sprites drawn programmatically — playable without original game assets
+- **Responsive Controls:** 8-directional keyboard movement
 
 ## Controls
 
-| Key   | Action          |
-| ----- | --------------- |
-| ← →   | Move Left/Right |
-| ↑ ↓   | Move Up/Down    |
-| Space | Jump            |
-| Z     | Shoot           |
+| Key            | Action                   |
+| -------------- | ------------------------ |
+| ← → ↑ ↓        | Move (8-directional)     |
+| Z              | Shoot                    |
+| Space / Click  | Start game (menu only)   |
 
 ## Conversion Notes
 
@@ -89,9 +88,9 @@ See [ASSET_EXTRACTION.md](ASSET_EXTRACTION.md) for detailed instructions.
 
 ### Adding New Levels
 
-1. Create level configuration in `Constants.js`
-2. Export level data from GameMaker as JSON
-3. Create level-specific scene or load from data
+1. Add a full entry to `LEVEL_DATA` in `src/utils/LevelManager.js` (platforms, obstacles, enemies, spawns)
+2. Add a matching entry to `GAME_CONSTANTS.LEVELS` in `src/utils/Constants.js` (name and era)
+3. The level is automatically loaded by `LevelScene` via `LevelManager.getLevelData()`
 
 ### Extending Enemy AI
 
@@ -105,9 +104,9 @@ Edit `src/physics/Enemy.js` to add new behaviors:
 
 Adjust physics constants in `src/utils/Constants.js`:
 
-- Gravity
-- Player movement speed
-- Enemy behavior parameters
+- Player movement speed and damage cooldown
+- Enemy speed, detection radius, and health per type
+- Projectile speed, damage, and lifetime
 
 ## Building for Production
 
@@ -158,6 +157,6 @@ This project is a conversion of "Onwards To The Past" - an award-winning game.
 
 ---
 
-**Last Updated:** 2026-04-25  
+**Last Updated:** 2026-05-10  
 **Framework Version:** Phaser 3.55+  
 **Node Version:** 14.0+
