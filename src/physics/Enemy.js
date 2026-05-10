@@ -6,6 +6,7 @@ class Enemy {
     this.type = type || GAME_CONSTANTS.ENEMY_TYPES.MELEE;
     this.era = era || "asylum";
     this.canFire = true;
+    this.aggroed = false;
     this.state = "patrol"; // 'patrol' | 'chase'
 
     const levelIdx      = scene.levelIndex || 0;
@@ -49,10 +50,11 @@ class Enemy {
       player.sprite.y,
     );
 
-    // State transitions with hysteresis
+    // State transitions: aggro locks chase permanently once triggered by damage;
+    // distance detection still works for un-aggroed enemies.
     if (dist < GAME_CONSTANTS.ENEMY_DETECTION_RADIUS) {
       this.state = "chase";
-    } else if (dist > GAME_CONSTANTS.ENEMY_DETECTION_RADIUS * 1.8) {
+    } else if (!this.aggroed && dist > GAME_CONSTANTS.ENEMY_DETECTION_RADIUS * 1.8) {
       this.state = "patrol";
     }
 
@@ -136,6 +138,8 @@ class Enemy {
 
   takeDamage(amount) {
     this.health -= amount;
+    this.aggroed = true;
+    this.state = "chase";
 
     // Brief white flash
     this.sprite.setTintFill(0xffffff);
