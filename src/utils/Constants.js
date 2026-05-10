@@ -15,9 +15,14 @@ const GAME_CONSTANTS = {
   ENEMY_DAMAGE: 10,
   ENEMY_DAMAGE_BRUTE: 30,
   ENEMY_DETECTION_RADIUS: 200,
-  ENEMY_HEALTH_MELEE: 3,
-  ENEMY_HEALTH_RANGED: 10,
-  ENEMY_HEALTH_BRUTE: 15,
+  // Base health at level 0 — shots to kill at PROJECTILE_DAMAGE 25:
+  //   melee 2 shots, ranged 2 shots, brute 3 shots (minimum per design spec)
+  ENEMY_HEALTH_MELEE: 40,
+  ENEMY_HEALTH_RANGED: 50,
+  ENEMY_HEALTH_BRUTE: 75,
+  // Per-level difficulty scaling (applied in Enemy constructor via scene.levelIndex)
+  DIFFICULTY_HEALTH_SCALE: 0.15,  // +15 % health per level  → 2.5× at level 10
+  DIFFICULTY_SPEED_SCALE:  0.07,  // +7 % speed per level    → 1.7× at level 10
 
   // Projectile Stats
   PROJECTILE_SPEED: 420,

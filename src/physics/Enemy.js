@@ -5,9 +5,13 @@ class Enemy {
     this.scene = scene;
     this.type = type || GAME_CONSTANTS.ENEMY_TYPES.MELEE;
     this.era = era || "asylum";
-    this.health = this._initialHealth();
     this.canFire = true;
     this.state = "patrol"; // 'patrol' | 'chase'
+
+    const levelIdx      = scene.levelIndex || 0;
+    this.healthMult     = 1 + levelIdx * GAME_CONSTANTS.DIFFICULTY_HEALTH_SCALE;
+    this.speedMult      = 1 + levelIdx * GAME_CONSTANTS.DIFFICULTY_SPEED_SCALE;
+    this.health         = this._initialHealth();
 
     // Circular patrol around spawn point
     this.patrolCenter = { x, y };
@@ -25,14 +29,11 @@ class Enemy {
   }
 
   _initialHealth() {
-    switch (this.type) {
-      case GAME_CONSTANTS.ENEMY_TYPES.BRUTE:
-        return GAME_CONSTANTS.ENEMY_HEALTH_BRUTE;
-      case GAME_CONSTANTS.ENEMY_TYPES.RANGED:
-        return GAME_CONSTANTS.ENEMY_HEALTH_RANGED;
-      default:
-        return GAME_CONSTANTS.ENEMY_HEALTH_MELEE;
-    }
+    const base =
+      this.type === GAME_CONSTANTS.ENEMY_TYPES.BRUTE  ? GAME_CONSTANTS.ENEMY_HEALTH_BRUTE  :
+      this.type === GAME_CONSTANTS.ENEMY_TYPES.RANGED ? GAME_CONSTANTS.ENEMY_HEALTH_RANGED :
+                                                        GAME_CONSTANTS.ENEMY_HEALTH_MELEE;
+    return Math.round(base * this.healthMult);
   }
 
   update() {
@@ -72,7 +73,7 @@ class Enemy {
       tx,
       ty,
     );
-    const spd = GAME_CONSTANTS.ENEMY_SPEED * 0.55;
+    const spd = GAME_CONSTANTS.ENEMY_SPEED * 0.55 * this.speedMult;
     this.sprite.setVelocity(Math.cos(angle) * spd, Math.sin(angle) * spd);
     this.sprite.setRotation(angle);
   }
@@ -90,10 +91,10 @@ class Enemy {
       // Keep preferred distance; shoot when in range
       const preferred = 160;
       if (dist > preferred + 20) {
-        const spd = GAME_CONSTANTS.ENEMY_CHASE_SPEED;
+        const spd = GAME_CONSTANTS.ENEMY_CHASE_SPEED * this.speedMult;
         this.sprite.setVelocity(Math.cos(angle) * spd, Math.sin(angle) * spd);
       } else if (dist < preferred - 20) {
-        const spd = GAME_CONSTANTS.ENEMY_CHASE_SPEED * 0.7;
+        const spd = GAME_CONSTANTS.ENEMY_CHASE_SPEED * 0.7 * this.speedMult;
         this.sprite.setVelocity(-Math.cos(angle) * spd, -Math.sin(angle) * spd);
       } else {
         this.sprite.setVelocity(0, 0);
@@ -101,11 +102,11 @@ class Enemy {
       this._tryShoot(angle);
     } else if (this.type === GAME_CONSTANTS.ENEMY_TYPES.BRUTE) {
       // Slow but relentless charge
-      const spd = GAME_CONSTANTS.ENEMY_CHASE_SPEED * 0.72;
+      const spd = GAME_CONSTANTS.ENEMY_CHASE_SPEED * 0.72 * this.speedMult;
       this.sprite.setVelocity(Math.cos(angle) * spd, Math.sin(angle) * spd);
     } else {
       // Melee — fast charge
-      const spd = GAME_CONSTANTS.ENEMY_CHASE_SPEED;
+      const spd = GAME_CONSTANTS.ENEMY_CHASE_SPEED * this.speedMult;
       this.sprite.setVelocity(Math.cos(angle) * spd, Math.sin(angle) * spd);
     }
   }
