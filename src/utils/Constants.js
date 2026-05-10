@@ -5,7 +5,7 @@ const GAME_CONSTANTS = {
   HEIGHT: 768,
 
   // Player Stats
-  PLAYER_START_HEALTH: 900,
+  PLAYER_START_HEALTH: 200,
   PLAYER_SPEED: 220,
   PLAYER_DAMAGE_COOLDOWN: 750, // ms (45 frames @ 60fps)
 
