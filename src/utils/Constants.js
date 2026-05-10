@@ -21,7 +21,8 @@ const GAME_CONSTANTS = {
 
   // Projectile Stats
   PROJECTILE_SPEED: 420,
-  PROJECTILE_DAMAGE: 25,
+  PROJECTILE_DAMAGE: 25,        // player projectile damage to enemies
+  ENEMY_PROJECTILE_DAMAGE: 20,  // enemy projectile damage to player (higher than melee)
   PROJECTILE_LIFETIME: 2500, // ms
 
   // Eras/Themes

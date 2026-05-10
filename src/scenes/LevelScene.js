@@ -164,21 +164,32 @@ class LevelScene extends Phaser.Scene {
     this.physics.add.overlap(
       this.playerProjectiles,
       this.enemies,
-      (projSprite, enemySprite) => {
-        projSprite.destroy();
+      (a, b) => {
+        // Use group.contains() to identify args — Phaser 3.55 can swap them
+        // when one side is a single sprite rather than a group.
+        const projSprite = this.playerProjectiles.contains(a) ? a : b;
+        const enemySprite = projSprite === a ? b : a;
+        if (!projSprite.active) return;
+        projSprite.disableBody(true, true);
+        this.time.delayedCall(0, () => { if (projSprite) projSprite.destroy(); });
         if (enemySprite.enemyRef) {
           enemySprite.enemyRef.takeDamage(GAME_CONSTANTS.PROJECTILE_DAMAGE);
         }
       },
     );
 
-    // Enemy projectiles hit player
+    // Enemy projectiles hit player.
+    // Use group.contains() to identify the projectile — Phaser 3.55 can swap
+    // callback args when the second overlap target is a single sprite.
     this.physics.add.overlap(
       this.projectiles,
       this.player.sprite,
-      (projSprite) => {
-        projSprite.destroy();
-        this.player.takeDamage(GAME_CONSTANTS.ENEMY_DAMAGE);
+      (a, b) => {
+        const proj = this.projectiles.contains(a) ? a : b;
+        if (!proj.active) return;
+        proj.disableBody(true, true);
+        this.time.delayedCall(0, () => { if (proj) proj.destroy(); });
+        this.player.takeDamage(GAME_CONSTANTS.ENEMY_PROJECTILE_DAMAGE);
       },
     );
 
@@ -200,13 +211,19 @@ class LevelScene extends Phaser.Scene {
 
     // Player projectiles / walls — overlap, not collider: collider separates bodies and
     // can zero velocity before the callback runs, making projectiles stop on first wall touch.
-    this.physics.add.overlap(this.playerProjectiles, this.walls, (projSprite) => {
-      projSprite.destroy();
+    this.physics.add.overlap(this.playerProjectiles, this.walls, (a, b) => {
+      const projSprite = this.playerProjectiles.contains(a) ? a : b;
+      if (!projSprite.active) return;
+      projSprite.disableBody(true, true);
+      this.time.delayedCall(0, () => { if (projSprite) projSprite.destroy(); });
     });
 
     // Enemy projectiles / walls
-    this.physics.add.overlap(this.projectiles, this.walls, (projSprite) => {
-      projSprite.destroy();
+    this.physics.add.overlap(this.projectiles, this.walls, (a, b) => {
+      const projSprite = this.projectiles.contains(a) ? a : b;
+      if (!projSprite.active) return;
+      projSprite.disableBody(true, true);
+      this.time.delayedCall(0, () => { if (projSprite) projSprite.destroy(); });
     });
   }
 

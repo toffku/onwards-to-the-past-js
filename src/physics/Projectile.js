@@ -6,6 +6,7 @@ class Projectile {
     const key = isPlayerProjectile ? "projectile_player" : "projectile_enemy";
 
     this.sprite = group.create(x, y, key);
+    if (!this.sprite) return;
     this.sprite.setVelocity(velocityX, velocityY);
     this.sprite.setRotation(Math.atan2(velocityY, velocityX));
     this.sprite.setCollideWorldBounds(false);
