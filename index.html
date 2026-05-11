@@ -56,8 +56,17 @@
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
 
     <!-- Game Scripts -->
-    <!-- Load order: Constants → Utilities → Physics → UI → Scenes → Config → Main -->
+    <!-- Load order: Constants → Sprites → Utilities → Physics → UI → Scenes → Config → Main -->
     <script src="src/utils/Constants.js"></script>
+    <!-- Sprite subsystem: shared utils and era colours must precede individual generators -->
+    <script src="src/sprites/SpriteUtils.js"></script>
+    <script src="src/sprites/EraColors.js"></script>
+    <script src="src/sprites/PixelSprite.js"></script>
+    <script src="src/sprites/PlayerSprite.js"></script>
+    <script src="src/sprites/ProjectileSprites.js"></script>
+    <script src="src/sprites/EnemyMeleeSprite.js"></script>
+    <script src="src/sprites/EnemyRangedSprite.js"></script>
+    <script src="src/sprites/EnemyBruteSprite.js"></script>
     <script src="src/utils/SpriteGenerator.js"></script>
     <script src="src/utils/LevelManager.js"></script>
     <script src="src/physics/Projectile.js"></script>
