@@ -1,8 +1,8 @@
 // Melee enemy — 32×32, aggressive angular silhouette, facing right.
 // Claw/slash weapon visible on the right side.
 
-class EnemyMeleeSprite {
-  static generate(scene, era) {
+const EnemyMeleeSprite = {
+  generate(scene, era) {
     const c = ERA_COLORS[era].melee;
     SpriteUtils.draw(scene, `enemy_melee_${era}`, 32, 32, (g) => {
       // Shadow
@@ -26,5 +26,5 @@ class EnemyMeleeSprite {
       g.fillTriangle(25, 13, 31, 16, 25, 19);
       g.fillTriangle(27, 12, 31, 14, 29, 10);
     });
-  }
-}
+  },
+};

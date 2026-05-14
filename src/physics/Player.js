@@ -1,78 +1,61 @@
 // Player — top-down shooter. No gravity, no jumping.
 // Moves in 8 directions (arrow keys); sprite rotates to face movement direction.
 // Shoots in the direction last faced (Z key).
-class Player {
-  constructor(scene, x, y) {
-    this.scene = scene;
-    this.health = GAME_CONSTANTS.PLAYER_START_HEALTH;
-    this.speed = GAME_CONSTANTS.PLAYER_SPEED;
-    this.facingAngle = 0; // radians; 0 = right, matches Phaser rotation convention
-    this.canFire = true;
-    this.damageCooldown = false;
+function createPlayer(scene, x, y) {
+  let health = GAME_CONSTANTS.PLAYER_START_HEALTH;
+  const speed = GAME_CONSTANTS.PLAYER_SPEED;
+  let facingAngle = 0; // radians; 0 = right, matches Phaser rotation convention
+  let canFire = true;
+  let damageCooldown = false;
 
-    this.sprite = scene.physics.add.sprite(x, y, "player");
-    this.sprite.setCollideWorldBounds(true);
-    this.sprite.setDamping(true);
-    this.sprite.setDrag(0.85);
-    this.sprite.setMaxVelocity(this.speed);
-    this.sprite.playerRef = this;
-  }
+  const sprite = scene.physics.add.sprite(x, y, "player");
+  sprite.setCollideWorldBounds(true);
+  sprite.setDamping(true);
+  sprite.setDrag(0.85);
+  sprite.setMaxVelocity(speed);
 
   // dx, dy are normalised direction components (-1, 0, or 1 each)
-  move(dx, dy) {
-    this.sprite.setVelocity(dx * this.speed, dy * this.speed);
-    this.facingAngle = Math.atan2(dy, dx);
-    this.sprite.setRotation(this.facingAngle);
+  function move(dx, dy) {
+    sprite.setVelocity(dx * speed, dy * speed);
+    facingAngle = Math.atan2(dy, dx);
+    sprite.setRotation(facingAngle);
   }
 
-  stop() {
-    this.sprite.setVelocity(0, 0);
+  function stop() {
+    sprite.setVelocity(0, 0);
   }
 
-  shoot(projectileGroup) {
-    if (!this.canFire) return;
-
-    const ox = Math.cos(this.facingAngle) * 22;
-    const oy = Math.sin(this.facingAngle) * 22;
-    const vx = Math.cos(this.facingAngle) * GAME_CONSTANTS.PROJECTILE_SPEED;
-    const vy = Math.sin(this.facingAngle) * GAME_CONSTANTS.PROJECTILE_SPEED;
-
-    new Projectile(
-      this.scene,
-      this.sprite.x + ox,
-      this.sprite.y + oy,
-      vx,
-      vy,
-      projectileGroup,
-      true,
-    );
-
-    this.canFire = false;
-    this.scene.time.delayedCall(220, () => {
-      this.canFire = true;
-    });
+  function shoot(projectileGroup) {
+    if (!canFire) return;
+    const ox = Math.cos(facingAngle) * 22;
+    const oy = Math.sin(facingAngle) * 22;
+    const vx = Math.cos(facingAngle) * GAME_CONSTANTS.PROJECTILE_SPEED;
+    const vy = Math.sin(facingAngle) * GAME_CONSTANTS.PROJECTILE_SPEED;
+    createProjectile(scene, sprite.x + ox, sprite.y + oy, vx, vy, projectileGroup, true);
+    canFire = false;
+    scene.time.delayedCall(220, () => { canFire = true; });
   }
 
-  takeDamage(amount) {
-    if (this.damageCooldown) return;
-
-    this.health -= amount;
-    this.damageCooldown = true;
-
-    // Flash red on hit
-    this.scene.tweens.add({
-      targets: this.sprite,
+  function takeDamage(amount) {
+    if (damageCooldown) return;
+    health -= amount;
+    damageCooldown = true;
+    scene.tweens.add({
+      targets: sprite,
       alpha: 0.2,
       duration: 80,
       yoyo: true,
       repeat: 3,
-      onComplete: () => {
-        if (this.sprite && this.sprite.active) this.sprite.setAlpha(1);
-      },
+      onComplete: () => { if (sprite && sprite.active) sprite.setAlpha(1); },
     });
-
-    this.scene.time.delayedCall(GAME_CONSTANTS.PLAYER_DAMAGE_COOLDOWN, () => {
-      this.damageCooldown = false;
+    scene.time.delayedCall(GAME_CONSTANTS.PLAYER_DAMAGE_COOLDOWN, () => {
+      damageCooldown = false;
     });
   }
+
+  const player = { sprite, move, stop, shoot, takeDamage };
+  // health is read externally (HUD, death check, enemy aggro guard)
+  Object.defineProperty(player, "health", { get: () => health, enumerable: true });
+  sprite.playerRef = player;
+  return player;
 }

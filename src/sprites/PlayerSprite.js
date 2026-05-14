@@ -1,8 +1,8 @@
 // Player character — 40×40, top-down, facing right (angle = 0).
 // Phaser rotates the sprite to match the player's facing direction at runtime.
 
-class PlayerSprite {
-  static generate(scene) {
+const PlayerSprite = {
+  generate(scene) {
     SpriteUtils.draw(scene, "player", 40, 40, (g) => {
       // Drop shadow
       g.fillStyle(0x000000, 0.2);
@@ -50,5 +50,5 @@ class PlayerSprite {
       g.fillStyle(0x888866);
       g.fillRect(37, 17, 3, 6);
     });
-  }
-}
+  },
+};

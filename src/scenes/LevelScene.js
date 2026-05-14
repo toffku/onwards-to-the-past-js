@@ -45,7 +45,7 @@ class LevelScene extends Phaser.Scene {
     const spawn = levelData.spawns && levelData.spawns.player
       ? levelData.spawns.player
       : { x: 80, y: 350 };
-    this.player = new Player(this, spawn.x, spawn.y);
+    this.player = createPlayer(this, spawn.x, spawn.y);
 
     // ── Collisions ────────────────────────────────────────────────────────────
     this._setupCollisions();
@@ -57,7 +57,7 @@ class LevelScene extends Phaser.Scene {
     };
 
     // ── HUD ───────────────────────────────────────────────────────────────────
-    this.hud = new HUD(this);
+    this.hud = createHUD(this);
 
     // ── Camera ────────────────────────────────────────────────────────────────
     this.cameras.main.setBounds(0, 0, worldW, worldH);
@@ -138,13 +138,13 @@ class LevelScene extends Phaser.Scene {
 
     if (levelData.enemies && levelData.enemies.length > 0) {
       levelData.enemies.forEach((e) => {
-        new Enemy(this, e.x, e.y, e.type, e.era || era);
+        createEnemy(this, e.x, e.y, e.type, e.era || era);
       });
     } else {
       // Fallback for placeholder levels
-      new Enemy(this, 400, 200, GAME_CONSTANTS.ENEMY_TYPES.MELEE, era);
-      new Enemy(this, 700, 350, GAME_CONSTANTS.ENEMY_TYPES.RANGED, era);
-      new Enemy(this, 1000, 200, GAME_CONSTANTS.ENEMY_TYPES.BRUTE, era);
+      createEnemy(this, 400, 200, GAME_CONSTANTS.ENEMY_TYPES.MELEE, era);
+      createEnemy(this, 700, 350, GAME_CONSTANTS.ENEMY_TYPES.RANGED, era);
+      createEnemy(this, 1000, 200, GAME_CONSTANTS.ENEMY_TYPES.BRUTE, era);
     }
   }
 

@@ -1,28 +1,28 @@
 // Advanced Level Configuration System
 
-class LevelManager {
-  static getLevelData(levelIndex) {
+const LevelManager = {
+  getLevelData(levelIndex) {
     return LEVEL_DATA[levelIndex];
-  }
+  },
 
-  static getLevelByName(name) {
+  getLevelByName(name) {
     return LEVEL_DATA.find(
       (level) => level.name.toLowerCase() === name.toLowerCase(),
     );
-  }
+  },
 
-  static getTotalLevels() {
+  getTotalLevels() {
     return LEVEL_DATA.length;
-  }
+  },
 
-  static isLastLevel(levelIndex) {
+  isLastLevel(levelIndex) {
     return levelIndex >= LEVEL_DATA.length - 1;
-  }
+  },
 
-  static getNextLevel(levelIndex) {
+  getNextLevel(levelIndex) {
     return levelIndex < LEVEL_DATA.length - 1 ? levelIndex + 1 : null;
-  }
-}
+  },
+};
 
 // Comprehensive Level Data
 const LEVEL_DATA = [

@@ -1,7 +1,7 @@
 // Ranged enemy — 36×36, lean profile, gun visible, facing right.
 
-class EnemyRangedSprite {
-  static generate(scene, era) {
+const EnemyRangedSprite = {
+  generate(scene, era) {
     const c = ERA_COLORS[era].ranged;
     SpriteUtils.draw(scene, `enemy_ranged_${era}`, 36, 36, (g) => {
       // Shadow
@@ -32,5 +32,5 @@ class EnemyRangedSprite {
       g.fillStyle(0x777777);
       g.fillRect(25, 15, 11, 1);
     });
-  }
-}
+  },
+};

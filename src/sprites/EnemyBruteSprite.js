@@ -1,7 +1,7 @@
 // Brute enemy — 44×44, massive intimidating frame, two visible fists, facing right.
 
-class EnemyBruteSprite {
-  static generate(scene, era) {
+const EnemyBruteSprite = {
+  generate(scene, era) {
     const c = ERA_COLORS[era].brute;
     SpriteUtils.draw(scene, `enemy_brute_${era}`, 44, 44, (g) => {
       // Shadow (larger alpha = heavier presence)
@@ -32,5 +32,5 @@ class EnemyBruteSprite {
       g.fillStyle(c.accent);
       g.fillCircle(10, 22, 5);
     });
-  }
-}
+  },
+};

@@ -1,9 +1,9 @@
 // SpriteGenerator — orchestrates all programmatic texture generation.
 // Call SpriteGenerator.generate(scene) at the top of LevelScene.create() before any sprites.
-// Individual sprite classes live in src/sprites/ and must be loaded before this file.
+// Individual sprite modules live in src/sprites/ and must be loaded before this file.
 
-class SpriteGenerator {
-  static generate(scene) {
+const SpriteGenerator = {
+  generate(scene) {
     PixelSprite.generate(scene);
     PlayerSprite.generate(scene);
     ProjectileSprites.generate(scene);
@@ -12,5 +12,5 @@ class SpriteGenerator {
       EnemyRangedSprite.generate(scene, era);
       EnemyBruteSprite.generate(scene, era);
     });
-  }
-}
+  },
+};

@@ -1,8 +1,8 @@
 // Projectile textures for both sides.
 // Player bolt: cyan laser. Enemy bolt: red plasma.
 
-class ProjectileSprites {
-  static generate(scene) {
+const ProjectileSprites = {
+  generate(scene) {
     SpriteUtils.draw(scene, "projectile_player", 20, 8, (g) => {
       g.fillStyle(0x00ccff, 0.25);
       g.fillRect(0, 1, 20, 6);
@@ -22,5 +22,5 @@ class ProjectileSprites {
       g.fillStyle(0xff8844);
       g.fillRect(3, 2, 10, 2);
     });
-  }
-}
+  },
+};
