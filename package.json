@@ -6,7 +6,8 @@
   "scripts": {
     "start": "http-server . -p 8000 -c-1",
     "dev": "http-server . -p 8000 -c-1",
-    "build": "echo 'Build script - customize as needed'"
+    "build": "echo 'Build script - customize as needed'",
+    "gen-backgrounds": "node tools/gen-backgrounds.js"
   },
   "keywords": [
     "phaser",
@@ -17,6 +18,7 @@
   "author": "Ubisoft",
   "license": "MIT",
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "pngjs": "^7.0.0"
   }
 }

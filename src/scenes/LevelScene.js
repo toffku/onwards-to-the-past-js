@@ -12,7 +12,9 @@ class LevelScene extends Phaser.Scene {
   }
 
   preload() {
-    // All textures are generated programmatically in create()
+    GAME_CONSTANTS.ERAS.forEach(era => {
+      this.load.image(`bg_${era}`, `assets/backgrounds/bg_${era}.png`);
+    });
   }
 
   create() {
@@ -68,17 +70,12 @@ class LevelScene extends Phaser.Scene {
     this.levelCompleting = false;
   }
 
-  // ── Floor background with subtle grid ─────────────────────────────────────
+  // ── Floor background — tiled era-specific PNG ─────────────────────────────
 
   _drawFloor(w, h) {
-    const g = this.add.graphics();
-    g.fillStyle(this._eraFloorColorHex());
-    g.fillRect(0, 0, w, h);
-
-    // Subtle grid lines
-    g.lineStyle(1, 0xffffff, 0.04);
-    for (let x = 0; x <= w; x += 64) g.lineBetween(x, 0, x, h);
-    for (let y = 0; y <= h; y += 64) g.lineBetween(0, y, w, y);
+    this.add.tileSprite(0, 0, w, h, `bg_${this.levelConfig.era}`)
+      .setOrigin(0, 0)
+      .setDepth(-1);
   }
 
   // ── Build all walls (visual + physics) ────────────────────────────────────
@@ -305,14 +302,6 @@ class LevelScene extends Phaser.Scene {
       medieval: "#161628", wildwest: "#2e2010", wwii: "#1a1a1a",
     };
     return map[this.levelConfig.era] || "#1a1a22";
-  }
-
-  _eraFloorColorHex() {
-    const map = {
-      asylum: 0x1e1e28, egypt: 0x3a2e18, jurassic: 0x0f2210,
-      medieval: 0x161628, wildwest: 0x2e2010, wwii: 0x1a1a1a,
-    };
-    return map[this.levelConfig.era] || 0x1a1a22;
   }
 
   _eraWallColorHex() {

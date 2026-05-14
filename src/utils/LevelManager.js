@@ -45,9 +45,40 @@ const LEVEL_DATA = [
       { x: 1800, y: 700, width: 200, height: 50, type: "platform" },
     ],
     obstacles: [
-      // Format: { x, y, width, height, type: 'full' | 'half' }
-      { x: 800, y: 400, width: 50, height: 100, type: "full" },
-      { x: 1200, y: 450, width: 50, height: 50, type: "half" },
+      // ── Asylum Ward A — beds pressed against the north wall ────────────────
+      // Three hospital beds in a row; small medical carts at the foot of each.
+      // South partition closes off the ward from the open corridor below.
+      { x: 110, y: 28, width: 90, height: 42, name: "hospital_bed" },
+      { x: 245, y: 28, width: 90, height: 42, name: "hospital_bed" },
+      { x: 380, y: 28, width: 90, height: 42, name: "hospital_bed" },
+      { x: 202, y: 28, width: 26, height: 26, name: "medical_cart" },
+      { x: 337, y: 28, width: 26, height: 26, name: "medical_cart" },
+      { x: 90,  y: 148, width: 425, height: 12, name: "ward_partition" },
+
+      // ── Examination Room — partial U-shaped enclosure (upper-center) ───────
+      // North and west walls enclose the room; east wall is partial (gap below
+      // y:144) so the player can enter from the south side.
+      { x: 640, y: 24, width: 282, height: 12, name: "exam_room_north" },
+      { x: 640, y: 24, width: 12,  height: 248, name: "exam_room_west" },
+      { x: 910, y: 24, width: 12,  height: 120, name: "exam_room_east" },
+      { x: 700, y: 84, width: 155, height: 60,  name: "examination_table" },
+      { x: 834, y: 172, width: 42, height: 55,  name: "equipment_trolley" },
+
+      // ── Isolation Block — three cells, each with a bed (upper-right-center) ─
+      // Cells are 106 px wide (interior). No south walls — accessible from below.
+      { x: 1080, y: 24, width: 358, height: 12,  name: "isolation_top_wall" },
+      { x: 1080, y: 24, width: 12,  height: 210, name: "isolation_outer_left" },
+      { x: 1198, y: 24, width: 12,  height: 210, name: "isolation_divider" },
+      { x: 1316, y: 24, width: 12,  height: 210, name: "isolation_divider" },
+      { x: 1426, y: 24, width: 12,  height: 210, name: "isolation_outer_right" },
+      { x: 1098, y: 40, width: 82,  height: 34,  name: "isolation_bed" },
+      { x: 1216, y: 40, width: 82,  height: 34,  name: "isolation_bed" },
+      { x: 1334, y: 40, width: 82,  height: 34,  name: "isolation_bed" },
+
+      // ── Scattered debris — cover in the open middle ground ─────────────────
+      { x: 490,  y: 368, width: 90, height: 36, name: "overturned_gurney" },
+      { x: 1000, y: 330, width: 90, height: 36, name: "abandoned_gurney" },
+      { x: 1640, y: 352, width: 60, height: 60, name: "supply_cabinet" },
     ],
     enemies: [
       // Format: { x, y, type: 'brute' | 'melee' | 'ranged' }
